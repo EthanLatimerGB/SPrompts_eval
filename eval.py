@@ -168,6 +168,7 @@ for _, (path, inputs, targets) in enumerate(test_loader):
 y_pred = np.concatenate(y_pred)
 y_true = np.concatenate(y_true)
 
+# Prints the KMeans selection accuracy of the model
 print(sum(selectionsss == ((y_true / 2).astype(int))) / (len(y_true)))  # For CDDB-Hard
 # print(sum(selectionsss == ((y_true / 50).astype(int))) / (len(y_true)))   # For DomainNET
 # print(sum(selectionsss == ((y_true / 345).astype(int))) / (len(y_true)))  # For Core50
