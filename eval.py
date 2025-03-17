@@ -122,15 +122,15 @@ class DummyDataset(Dataset):
 
 
 args = setup_parser().parse_args()
-model = torch.load(args.resume)
+model_sprompt = torch.load(args.resume, weights_only=False)
 device = "cuda:0"
-model = model.to(device)
+model_slip = model_sprompt._network.to(device)
 test_dataset = DummyDataset(args.dataroot, args.datatype)
 test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False, num_workers=8)
 
 X, Y = [], []
 
-for id, task_centers in enumerate(model.all_keys):
+for id, task_centers in enumerate(model_sprompt.all_keys):
     X.append(task_centers.detach().cpu().numpy())
     Y.append(np.array([id] * len(task_centers)))
 
@@ -147,7 +147,7 @@ for _, (path, inputs, targets) in enumerate(test_loader):
     targets = targets.to(device)
 
     with torch.no_grad():
-        feature = model.extract_vector(inputs)
+        feature = model_slip.extract_vector(inputs)
         selection = neigh.predict(feature.detach().cpu().numpy())
         if args.random_select:
             selection = np.random.randint(0, Y.max(), selection.shape)
@@ -160,7 +160,7 @@ for _, (path, inputs, targets) in enumerate(test_loader):
 
         selection = torch.tensor(selection).to(device)
 
-        outputs = model.interface(inputs, selection)
+        outputs = model_slip.interface(inputs, selection)
     predicts = torch.topk(outputs, k=2, dim=1, largest=True, sorted=True)[1]
     y_pred.append(predicts.cpu().numpy())
     y_true.append(targets.cpu().numpy())
